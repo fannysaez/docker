@@ -157,9 +157,62 @@ docker image prune
 docker start <container>
 ```
 
----
-
 ## Volumes & Réseaux
+
+## Exemple pratique : Manipulation d’un container MariaDB
+
+### Lancer un container MariaDB
+
+```shell
+docker run -d --name db -e MARIADB_ROOT_PASSWORD=secret mariadb
+```
+
+### Accéder au container en mode interactif
+
+```shell
+docker exec -it db bash
+```
+
+#### Dans le container :
+
+- Se connecter à la base de données avec le client mariadb :
+
+  ```shell
+  mariadb -uroot -psecret
+  ```
+
+- SQL :
+  - Voir les bases existantes :
+    ```sql
+    SHOW DATABASES;
+    ```
+  - Créer la base `simplon` :
+    ```sql
+    CREATE DATABASE simplon;
+    USE simplon;
+    ```
+  - Créer une table `student` :
+    ```sql
+    CREATE TABLE student (id int primary key not null auto_increment, name varchar(255));
+    ```
+  - Insérer des étudiants :
+    ```sql
+    INSERT INTO student (name) values ("Jean"), ("Bernard"), ("Véronique");
+    ```
+  - Vérifier les données :
+    ```sql
+    SELECT * FROM student;
+    ```
+  - Se déconnecter du serveur MariaDB :
+    ```sql
+    exit
+    ```
+- (Vous êtes toujours dans le container !)
+
+- Créer un dump de la table :
+  ```shell
+  mariadb-dump -uroot -psecret -d student > student.sql
+  ```
 
 ### Volumes
 
