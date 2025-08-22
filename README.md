@@ -145,6 +145,18 @@ Voir les layers d’une image :
 docker history <image>
 ```
 
+### Nettoyer les images inutilisées
+
+```shell
+docker image prune
+```
+
+### Démarrer un container arrêté
+
+```shell
+docker start <container>
+```
+
 ---
 
 ## Volumes & Réseaux
@@ -359,9 +371,9 @@ docker compose up --build
 
 ---
 
-<!-- > **Modalités pédagogiques :**  
-> Travail individuel, sur 2 jours.  
+<!-- > **Modalités pédagogiques :**
+> Travail individuel, sur 2 jours.
 > Les fichiers Dockerfile et compose.yml doivent être rendus et accompagnés d’une documentation simple.
 
-> **Modalités d’évaluation :**  
+> **Modalités d’évaluation :**
 > Le Dockerfile et compose.yml sont fonctionnels et répondent à l’objectif décrit. -->
