@@ -1,228 +1,196 @@
-# Pull
+# Guide Docker Complet ![Docker](https://img.shields.io/badge/docker-ready-blue?logo=docker) ![Compose](https://img.shields.io/badge/compose-supported-blueviolet?logo=docker)
 
-Récupère une image depuis docker hub
+## Sommaire
 
-```shell
-    docker pull <image>
-    docker pull <image:tag>
-```
+- [Pré-requis](#pré-requis)
+- [Commandes Docker de base](#commandes-docker-de-base)
+- [Volumes & Réseaux](#volumes--réseaux)
+- [Docker Compose](#docker-compose)
+- [Contexte du projet Node.js/MariaDB/PhpMyAdmin](#contexte-du-projet-nodejsmariadbphpmyadmin)
+- [Livrables attendus](#livrables-attendus)
+- [Commandes utiles](#commandes-utiles)
 
-## PS
+---
 
-Voir la liste des containers/process docker
+## Pré-requis
 
-```shell
-    docker ps
-    docker ps -a (pour voir les containers à l'arret aussi)
-```
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installé (Windows/Mac/Linux)
+- [Docker Compose](https://docs.docker.com/compose/) (inclus dans Docker Desktop)
+- Droits administrateur sur votre machine
 
-## Run
-
-Lance un container depuis une image
-
-```shell
-    docker run <container>
-    # Mode interactif
-    docker run -it <container>
-```
-
-Append a command
+Vérifiez l’installation :
 
 ```shell
-    docker run <container> sleep 5
+docker --version
+docker compose version
 ```
 
-"detach" option pour laisser le container tourner en fond
+---
+
+## Commandes Docker de base
+
+### Pull
+
+Récupère une image depuis Docker Hub :
 
 ```shell
-    docker run -d <container>
+docker pull <image>
+docker pull <image:tag>
 ```
 
-Pour le "rattacher
+### Voir les containers/process
 
 ```shell
-    docker attach <container>
+docker ps
+docker ps -a   # voir aussi les containers arrêtés
 ```
 
-## Port
+### Run
 
-Map le port du container avec le localhost
+Lancer un container :
 
 ```shell
-    docker run -p 80:5000 <container>
+docker run <image>
+docker run -it <image>           # mode interactif
+docker run <image> sleep 5       # exécuter une commande
+docker run -d <image>            # mode détaché (en fond)
+docker attach <container>        # rattacher un container détaché
 ```
 
-## Env
+### Ports
 
-Lancer un container en modifiant le .env
+Mapper un port du container sur le localhost :
 
 ```shell
-    docker run -e APP_COLOR=teal <container>
+docker run -p 80:5000 <image>
 ```
 
-## Entrypoint et Cmd
-
-Si un ENTRYPOINT et un CMD sont préciser dans le Dockerfile on peut les overide
+### Variables d'environnement
 
 ```shell
-    docker run --entrypoint <newentrypoint> <container>
+docker run -e APP_COLOR=teal <image>
 ```
 
-## Exec
+### Entrypoint et CMD
 
-Lance un container et execute une commande
+Override possible :
 
 ```shell
-    docker exec <container> <cmd>
+docker run --entrypoint <newentrypoint> <image>
 ```
 
-## Stop
+### Exec
 
-Stop un container qui tourne
+Exécuter une commande dans un container existant :
 
 ```shell
-    docker stop <container>
+docker exec <container> <cmd>
 ```
 
-## Images
+### Stop
 
-Affiche la liste des images installées
+Arrêter un container :
 
 ```shell
-    docker images
+docker stop <container>
 ```
 
-## Remove
+### Images
 
-Supprimer un container ou une image
+Lister les images installées :
 
 ```shell
-    docker rm <container>
-    docker rmi <image>
+docker images
 ```
 
-## Inspect
+### Remove
 
-Analyser un container et ses variables d'environnement
+Supprimer un container ou une image :
 
 ```shell
-    docker inspect <container>
+docker rm <container>
+docker rmi <image>
 ```
 
-## Log
+### Inspect
 
-Voir les logs d'un container qui tourne en tache de fond
+Analyser un container :
 
 ```shell
-    docker logs <container>
+docker inspect <container>
 ```
 
-## Build
+### Logs
 
-Build sa propre image puis la push sur docker hub
+Voir les logs d’un container :
 
 ```shell
-    docker build Dockerfile -t maksim/monimage
-    docker push maksim/monimage
+docker logs <container>
 ```
 
-## History
+### Build & Push
 
-Permet de voir les layers et leur poids
+Construire et publier une image :
 
 ```shell
-    docker history <image>
+docker build -t maksim/monimage .
+docker push maksim/monimage
 ```
 
-## Networks
+### History
+
+Voir les layers d’une image :
 
 ```shell
-    docker run <image>                      (Bridge: chaque container à sa propre IP)
-    docker run <image> --network=none       (aucun: le container est isolé)
-    docker run <image> --network=host       (Host: tout est mappé sur le local)
+docker history <image>
 ```
 
-Lister les networks
+---
+
+## Volumes & Réseaux
+
+### Volumes
+
+Créer un volume :
 
 ```shell
-    docker network ls
+docker volume create <volumename>
 ```
 
-Créer un network
+Persistance des données :
 
 ```shell
-    docker network create --driver bridge --subnet 182.18.0.0/16 <networkname>
+docker run -v /path/to/savelocal:/path/in/container <image>
+docker run -v <volumename>:/var/lib/mysql <image>
 ```
 
-## File System
-
-/var/lib/docker
-/aufs
-/containers
-/image
-/volumes
-
-## Volume
-
-Créer un volume
+Version détaillée :
 
 ```shell
-    docker volume create <volumename>
+docker run --mount type=bind,source=/data/mysql,target=/var/lib/mysql <image>
 ```
 
-Gérer la persistance des données même après suppression du container
+### Réseaux
+
+Lister les réseaux :
 
 ```shell
-# "bind mount parcequ'on bind un dossier local"
-    docker run -v /path/to/savelocal:/path/of/containerdata <container>
-    ou
-# "volume mount parcequ'on bind un volume docker"
-    docker run -v <volumename>:/var/lib/mysql
+docker network ls
 ```
 
-Verbose version
+Créer un réseau :
 
 ```shell
-    docker run \
-    --mount type=bind,source=/data/mysql,target=/var/lib/mysql <image>
+docker network create --driver bridge --subnet 182.18.0.0/16 <networkname>
 ```
 
-```shell
-docker container prune
-docker image prune # supprime les "danglings"
-# docker image prune -a #supprime toutes les images non-utilisé actuellement
+---
 
-# Supprime tout ce qui n'est pas utilisé
-docker system prune -a
+## Docker Compose
 
-docker inspect [container_name]
-```
+Définir une stack multi-container dans `docker-compose.yml` ou `compose.yml`.
 
-Petite astuce assez connue pour que votre user dans le container soit le même que sur votre machine
-
-```shell
-docker run -it -u $(id -u):$(id -g) -v "$PWD:/app" ubuntu bash
-```
-
-Créer un volume avec le dossier courant
-
-```shell
-# Linux ou WSL
--v $(pwd):/app
-# Powershell
--v ${PWD}:/app
-```
-
-## Docker compose
-
-Système permettant de définir dans un docker-compose.yml (ou "compose.yml")
-un ensemble de "services" qui doivent être lancés ensemble.
-Très pratique pour avoir une "stack" de containers réutilisable (app + db + phpmyadmin...).
-
-Voici un exemple qui lancera 2 containers:
-
-- un container python qui execute une commande
-- un container PostgreSQL
+Exemple :
 
 ```yaml
 services:
@@ -252,30 +220,148 @@ volumes:
   monvolume:
 ```
 
-On assume toujours que le dossier courant contient un fichier docker-compose.yml ou compose.yml
+Commandes :
 
 ```shell
 docker compose build
-# Lancer tous les services de la stack
 docker compose up
-# Couper les services de la stack
 docker compose down
-# "Monte" la stack en forçant un rebuild, utile si une image a changée
 docker compose up --build
-```
-
-Si le fichier "compose.yml" se trouve dans un autre dossier, on peut le préciser:
-
-```shell
 docker compose -f ./docker/compose.yml up
-```
-
-```shell
-# rentrer dans un contenaire service de la stack
 docker compose exec mon_service bash
 ```
 
-Si un fichier s'appelle docker-compose.override.yaml
-Permet d'override certaines lignes du docker-compose.
+---
+
+## Contexte du projet Node.js/MariaDB/PhpMyAdmin
+
+Vous disposez du code source d’une application Node.js.
+
+**Objectif :**  
+Créer une image Docker qui :
+
+- Contient le code source de l’application
+- Installe les dépendances (`npm install`)
+- Démarre automatiquement le serveur ExpressJS
+
+**Étapes :**
+
+1. **Créer un `Dockerfile`** pour builder l’application Node.js.
+2. **Créer un `compose.yml`** pour lancer :
+   - L’application Node.js
+   - Une base de données MariaDB
+   - PhpMyAdmin pour visualiser la base
+
+### Exemple de Dockerfile
+
+```dockerfile
+# filepath: ./Dockerfile
+FROM node:20-alpine
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+### Exemple de compose.yml
+
+```yaml
+# filepath: ./compose.yml
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: node_app
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=demo
+      - DB_PASSWORD=demo
+      - DB_NAME=demo
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:11
+    container_name: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: demo
+      MYSQL_USER: demo
+      MYSQL_PASSWORD: demo
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    environment:
+      PMA_HOST: db
+      PMA_USER: demo
+      PMA_PASSWORD: demo
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+volumes:
+  dbdata:
+```
 
 ---
+
+## Livrables attendus
+
+- `Dockerfile` (pour l’application Node.js)
+- `compose.yml` (pour la stack complète)
+- Documentation (ce fichier README.md)
+
+---
+
+## Commandes utiles
+
+Pour builder et lancer la stack :
+
+```shell
+docker compose build
+docker compose up
+```
+
+Pour arrêter la stack :
+
+```shell
+docker compose down
+```
+
+Pour accéder à PhpMyAdmin :  
+[http://localhost:8080](http://localhost:8080)  
+Login : `demo` / Mot de passe : `demo`  
+Serveur : `db`
+
+---
+
+**Astuce :**  
+Pour relancer la stack après modification du code :
+
+```shell
+docker compose up --build
+```
+
+---
+
+<!-- > **Modalités pédagogiques :**  
+> Travail individuel, sur 2 jours.  
+> Les fichiers Dockerfile et compose.yml doivent être rendus et accompagnés d’une documentation simple.
+
+> **Modalités d’évaluation :**  
+> Le Dockerfile et compose.yml sont fonctionnels et répondent à l’objectif décrit. -->
